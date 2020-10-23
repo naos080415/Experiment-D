@@ -38,7 +38,7 @@ void loop(){
         if( flag == 0 && digitalRead(SW) == LOW ){
             /* スイッチON */
             flag = 1;
-            Serial.print("PWM = (");
+            Serial.print("Moter = (");
             Serial.print(theta1);
             Serial.print(",");
             Serial.print(theta2);
