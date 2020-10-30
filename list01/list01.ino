@@ -40,14 +40,17 @@ void loop(){
 
         if( flag == 0 && digitalRead(SW) == LOW ){
             /* スイッチON */
-            flag = 1;
-            Serial.print("Moter = (");
-            Serial.print(theta1);
-            Serial.print(",");
-            Serial.print(theta2);
-            Serial.print(",");
-            Serial.print(theta3);
-            Serial.println(")");
+            delay(100);
+            if( flag == 0 && digitalRead(SW) == LOW ){
+                flag = 1;
+                Serial.print("Moter = (");
+                Serial.print(theta1);
+                Serial.print(",");
+                Serial.print(theta2);
+                Serial.print(",");
+                Serial.print(theta3);
+                Serial.println(")");
+            }
         }else if( flag == 1 && digitalRead(SW) == HIGH ){
             flag = 0;
         }
