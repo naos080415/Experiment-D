@@ -52,7 +52,9 @@ void loop(){
                 Serial.println(")");
             }
         }else if( flag == 1 && digitalRead(SW) == HIGH ){
-            flag = 0;
+            delay(100);
+            if( flag == 1 && digitalRead(SW) == HIGH )
+                flag = 0;
         }
     }
 
