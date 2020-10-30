@@ -1,3 +1,4 @@
+/* Github上で修正してみた。 */
 #include <Servo.h>
 #define SW 5    /* タクトスイッチのポート番号 */
 #define LED 10
