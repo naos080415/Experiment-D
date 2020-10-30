@@ -52,6 +52,19 @@ void loop(){
 
     digitalWrite(LED,OUTPUT);
     while(1){
+        /* ボリュームのポート番号を設定する */     
+        ad0 = analogRead(0);    /* ボリュームセンサ1 */
+        ad1 = analogRead(1);    /* ボリュームセンサ2 */
+        ad2 = analogRead(2);    /* ボリュームセンサ3 */
+
+        theta1 = ( ad0 * 180 / 1024);
+        theta2 = ( ad1 * 180 / 1024);
+        theta3 = ( ad2 * 180 / 1024);
+
+        mServo1.write(theta1);
+        mServo2.write(theta2);
+        mServo3.write(theta3);
+
         if( digitalRead(SW) == LOW ){
             /* スイッチON */
             delay(100);
