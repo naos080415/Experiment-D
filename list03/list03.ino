@@ -7,6 +7,7 @@ Servo mServo2;
 Servo mServo3;
 
 long ad0,ad1,ad2;
+int init_val1,init_val2,init_val3;
 int theta1[6] = {121,121,121,121,121,121};
 int theta2[6] = {76,76,101,115,132,132};
 int theta3[6] = {143,179,179,179,179,123};
@@ -57,13 +58,13 @@ void loop(){
         ad1 = analogRead(1);    /* ボリュームセンサ2 */
         ad2 = analogRead(2);    /* ボリュームセンサ3 */
 
-        theta1 = ( ad0 * 180 / 1024);
-        theta2 = ( ad1 * 180 / 1024);
-        theta3 = ( ad2 * 180 / 1024);
+        init_val1 = ( ad0 * 180 / 1024);
+        init_val2 = ( ad1 * 180 / 1024);
+        init_val3 = ( ad2 * 180 / 1024);
 
-        mServo1.write(theta1);
-        mServo2.write(theta2);
-        mServo3.write(theta3);
+        mServo1.write(init_val1);
+        mServo2.write(init_val2);
+        mServo3.write(init_val3);
 
         if( digitalRead(SW) == LOW ){
             /* スイッチON */
