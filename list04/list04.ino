@@ -7,17 +7,15 @@ Servo mServo1;
 Servo mServo2;
 Servo mServo3;
 
-long ad0,ad1,ad2;
-/* ボリュームセンサからの角度調整用変数 */
-int ad_theta1,ad_theta2,ad_theta3;
-
-/* 事前に測定したデータを代入する配列 */
-int data_theta1[10];
-int data_theta2[10];
-int data_theta3[10];
-
-/* シリアルポートから角度を操作する変数 */
-int serial_theta1,serial_theta2,serial_theta3;
+void motor_print(int val1,int val2,int val3){
+    Serial.print("Moter = (");
+    Serial.print(val1);
+    Serial.print(",");
+    Serial.print(val2);
+    Serial.print(",");
+    Serial.print(val3);
+    Serial.println(")");
+}
 
 void setup()
 {
@@ -32,7 +30,19 @@ void setup()
 
 void loop(){
     Serial.println("Program Start");
-    delay(2000);
+    long ad0,ad1,ad2;
+
+    /* ボリュームセンサからの角度調整用変数 */
+    int ad_theta1,ad_theta2,ad_theta3;
+
+    /* 事前に測定したデータを代入する配列 */
+    int data_theta1[10];
+    int data_theta2[10];
+    int data_theta3[10];
+
+    /* シリアルポートから角度を操作する変数 */
+    int serial_theta1,serial_theta2,serial_theta3;
+    
     int i = 0,j = 0;
     int flag = 0;
     int mode = 0;
@@ -43,6 +53,7 @@ void loop(){
     serial_theta2 = 90;
     serial_theta3 = 90;
 
+    delay(2000);
     while(1){
         ad0 = analogRead(0);    /* ボリュームセンサ1 */
         ad1 = analogRead(1);    /* ボリュームセンサ2 */
@@ -67,7 +78,7 @@ void loop(){
         case 1:
             delay(100);
             Serial.println("Mode Setting");
-            Serial.println("Input Mode(1-ad　　2-serial　　　3-data)");
+            Serial.println("Input Mode(1-ad　　2-serial　　　3-data  4-sensor_check)");
             mode = 2;
             break;
         
@@ -75,11 +86,33 @@ void loop(){
             if( Serial.available() ){
                 serial_num = Serial.read() - '0';
             }
-            if( serial_num == 1 || serial_num == 2 || serial_num == 3 )
+            if( serial_num == 1 || serial_num == 2 || serial_num == 3 || serial_num == 4)
                 mode = serial_num * 10;
             break;
-        case 10:
 
+        case 10:
+            /* ボリュームを回すと,その角度まで移動するプログラム */
+            Serial.println("Volume-Control");
+            mode = 11;
+            break;
+
+        case 11:
+            mServo1.write(ad_theta1);
+            mServo2.write(ad_theta2);
+            mServo3.write(ad_theta3);
+
+            if( flag == 0 && digitalRead(SW) == LOW ){
+                /* スイッチON */
+                delay(100);
+                if( flag == 0 && digitalRead(SW) == LOW ){
+                    flag = 1;
+                    motor_print(ad_theta1,ad_theta2,ad_theta3);
+                }
+            }else if( flag == 1 && digitalRead(SW) == HIGH ){
+                delay(100);
+                if( flag == 1 && digitalRead(SW) == HIGH )
+                    flag = 0;
+            }
             break;
 
         case 20:
@@ -115,19 +148,25 @@ void loop(){
             break;
 
         case 24:
+            weight = 100;
             for(i=0;i<3;i++){
                 serial_theta1 += (serial_string[i] - '0')*weight;
                 weight /= 10;
             }
+
+            weight = 100;
             for(i=4;i<7;i++){
                 serial_theta2 += (serial_string[i] - '0')*weight;
                 weight /= 10;
             }
+
+            weight = 100;
             for(i=8;i<11;i++){
                 serial_theta3 += (serial_string[i] - '0')*weight;
                 weight /= 10;
             }
 
+            motor_print(serial_theta1,serial_theta2,serial_theta3);
             mode = 25;
             break;
 
@@ -135,13 +174,18 @@ void loop(){
             mServo1.write(serial_theta1);
             mServo2.write(serial_theta2);
             mServo3.write(serial_theta3);
+            mode = 21;
             break;
 
         case 30:
 
-
             break;        
 
+        case 40:
+            
+            break;
+
+        
         default:
 
             break;
