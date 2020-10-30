@@ -13,8 +13,8 @@ void setup()
 {
     /* サーボモータのI/Oポートを入力する */
     mServo1.attach(3);  /* 第1関節サーボモーター */
-    mServo1.attach(6);  /* 第2関節サーボモーター */
-    mServo1.attach(9);  /* 第3関節サーボモーター */
+    mServo2.attach(6);  /* 第2関節サーボモーター */
+    mServo3.attach(9);  /* 第3関節サーボモーター */
     pinMode(SW,INPUT);
     pinMode(LED,OUTPUT);
     Serial.begin(9600);
