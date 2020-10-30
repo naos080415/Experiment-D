@@ -7,8 +7,10 @@ Servo mServo2;
 Servo mServo3;
 
 long ad0,ad1,ad2;
-int theta1[],theta2[],theta3[];
-
+int theta1[6] = {121,121,121,121,121,121};
+int theta2[6] = {76,76,101,115,132,132};
+int theta3[6] = {143,179,179,179,179,123};
+/*
 theta1[0] = 121;
 theta2[0] = 76;
 theta3[0] = 143;
@@ -32,7 +34,7 @@ theta3[4] = 179;
 theta1[5] = 121;
 theta2[5] = 132;
 theta3[5] = 123;
-
+*/
 
 void setup()
 {
@@ -53,11 +55,12 @@ void loop(){
         if( digitalRead(SW) == LOW ){
             /* スイッチON */
             delay(100);
-            if( digitalRead(SW) == LOW ){
+            if( digitalRead(SW) == LOW )
                 break;
+        }
     }
 
-    for(int i = 0;i < sizeof(theta1);i++){
+    for(int i = 0;i < 6;i++){
         mServo1.write(theta1[i]);
         mServo2.write(theta2[i]);
         mServo3.write(theta3[i]);
