@@ -35,15 +35,37 @@ int theta3[6] = {143,179,179,179,179,123};
 
 void Mother_anlge(int angle1,int angle2,int angle3){
     /* 回転限度角を超えないようにプログラムを追加する */
-    mServo1.write(angle1);
-    mServo2.write(angle2);
-    mServo3.write(angle3);
+    if( angle1 > Moter1_lim_min && angle1 < Moter1_lim_max )
+        mServo1.write(angle1);
+    else
+        Serial.print("Mother1-limit");
+
+    if( angle2 > Moter2_lim_min && angle2 < Moter2_lim_max )
+        mServo2.write(angle2);
+    else
+        Serial.print("Mother2-limit");
+
+    if( angle3 > Moter3_lim_min && angle3 < Moter3_lim_max )
+        mServo3.write(angle3);
+    else
+        Serial.print("Mother3-limit");
 }
 
 void Mother_anlge_speed(int angle1,int speed1,int angle2,int speed2,int angle3,int speed3){
-    mServo1.write(angle1,speed1,true);
-    mServo2.write(angle2,speed2,true);
-    mServo3.write(angle3,speed3,true);
+    if( angle1 > Moter1_lim_min && angle1 < Moter1_lim_max )
+        mServo1.write(angle1,speed1,true);
+    else
+        Serial.print("Mother1-limit");
+
+    if( angle2 > Moter2_lim_min && angle2 < Moter2_lim_max )
+        mServo2.write(angle2,speed2,true);
+    else
+        Serial.print("Mother2-limit");
+
+    if( angle3 > Moter3_lim_min && angle3 < Moter3_lim_max )
+        mServo3.write(angle3,speed3,true);
+    else
+        Serial.print("Mother3-limit");
 }
 
 int sw_flag(){
@@ -91,9 +113,11 @@ void loop(){
     int speed1 = 255,speed2 = 255,speed3 = 255;    /* サーボモータのスピード制御用変数 */
 
     /* 事前に測定したデータを代入する配列(テスト用にわかりやすい値を代入しています。) */
-    int data_theta1[13] = {180,160,140,120,100,80,60,40,20,0};
+    int data_theta1[13];
     int data_theta2[13];
     int data_theta3[13];
+    /* data_sizeを指定するプログラム */
+    int data_size = 0;
 
     /* 分割数を設定する変数 */
     int div = 1;
@@ -323,7 +347,7 @@ void loop(){
         case 36:
             /* 配列からのデータの読み出しを行い,スイッチ間を移動する */
             /* VarSpeedServoを使うことでなめらか制御が実現できる */
-            for(i=0;i<10;i++){
+            for(i=0;i<data_size;i++){
                 // Mother_anlge_speed(data_theta1[i],speed1,data_theta2[i],speed2,data_theta3[i],speed3);
 
                 mServo1.write(data_theta1[i],speed1,true);            
@@ -345,7 +369,12 @@ void loop(){
         case 38:
             Serial.print("実行時間：");
             Serial.println(end-start);
-            mode = 90;
+            mode = 39;
+            break;
+        
+        case 39:
+            if( sw_flag() == 1 )
+                mode = 1;
             break;
 
         case 40:
@@ -438,6 +467,7 @@ void loop(){
                 data_theta2[i] = buff2[i];
                 data_theta3[i] = buff3[i];
             }
+            data_size = buff_cnt;
             mode = 1;
             break;
 
