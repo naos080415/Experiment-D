@@ -1,3 +1,4 @@
+
 /* シリアルモニタに日本語を使っているため,メモリ使用量が非常に大きくなる */
 #include <VarSpeedServo.h>
 
@@ -5,12 +6,13 @@
 #define LED 10
 
 /* サーボモータの回転限度角 */
-#define Moter1_lim_min 
-#define Moter1_lim_max 
-#define Moter2_lim_min 
-#define Moter2_lim_max 
-#define Moter3_lim_min 
-#define Moter3_lim_max 
+#define Moter1_lim_min 0
+#define Moter1_lim_max 180
+#define Moter2_lim_min 0
+#define Moter2_lim_max 180
+#define Moter3_lim_min 0
+#define Moter3_lim_max 180
+
 
 VarSpeedServo mServo1;
 VarSpeedServo mServo2;
@@ -35,34 +37,34 @@ int theta3[6] = {143,179,179,179,179,123};
 
 void Mother_anlge(int angle1,int angle2,int angle3){
     /* 回転限度角を超えないようにプログラムを追加する */
-    if( angle1 > Moter1_lim_min && angle1 < Moter1_lim_max )
+    if( angle1 >= Moter1_lim_min && angle1 <= Moter1_lim_max )
         mServo1.write(angle1);
     else
         Serial.print("Mother1-limit");
 
-    if( angle2 > Moter2_lim_min && angle2 < Moter2_lim_max )
+    if( angle2 >= Moter2_lim_min && angle2 <= Moter2_lim_max )
         mServo2.write(angle2);
     else
         Serial.print("Mother2-limit");
 
-    if( angle3 > Moter3_lim_min && angle3 < Moter3_lim_max )
+    if( angle3 >= Moter3_lim_min && angle3 <= Moter3_lim_max )
         mServo3.write(angle3);
     else
         Serial.print("Mother3-limit");
 }
 
 void Mother_anlge_speed(int angle1,int speed1,int angle2,int speed2,int angle3,int speed3){
-    if( angle1 > Moter1_lim_min && angle1 < Moter1_lim_max )
+    if( angle1 >= Moter1_lim_min && angle1 <= Moter1_lim_max )
         mServo1.write(angle1,speed1,true);
     else
         Serial.print("Mother1-limit");
 
-    if( angle2 > Moter2_lim_min && angle2 < Moter2_lim_max )
+    if( angle2 >= Moter2_lim_min && angle2 <= Moter2_lim_max )
         mServo2.write(angle2,speed2,true);
     else
         Serial.print("Mother2-limit");
 
-    if( angle3 > Moter3_lim_min && angle3 < Moter3_lim_max )
+    if( angle3 >= Moter3_lim_min && angle3 <= Moter3_lim_max )
         mServo3.write(angle3,speed3,true);
     else
         Serial.print("Mother3-limit");
@@ -161,6 +163,7 @@ void loop(){
             delay(100);
             Serial.println("モード設定");
             Serial.println("(1-ボリュームで制御　　2-シリアルモニタで制御　　　3-配列からデータを読み出す　　4-センサ&モータ チェック)");
+            serial_num = 0;
             mode = 2;
             break;
         
@@ -222,6 +225,7 @@ void loop(){
                 buff2[i] = 0;
                 buff3[i] = 0;
             }
+            buff_cnt = 0;
             mode = 21;
             break;
         
@@ -235,6 +239,7 @@ void loop(){
             break;
 
         case 22:
+            /* 文字が入力されるまで待つ */
             if( Serial.available() ){
                 serial_string[i] = char(Serial.read());
                 if( serial_string[i] == ';' ){
@@ -244,7 +249,8 @@ void loop(){
                     mode = 23;
                 }
                 i++;
-            }
+            }else if( sw_flag() == 1 )
+                mode = 1;
             break;
 
         case 23:
@@ -322,11 +328,11 @@ void loop(){
             }
             Mother_anlge(serial_theta1,serial_theta2,serial_theta3);
             val_print(serial_theta1,serial_theta2,serial_theta3,0);
+            Serial.println("初期状態を設定したら,スイッチを押してください。再度設定したい場合は,モニターに再び数値を入れてください");
             mode = 34;
             break;
         
         case 34:
-            Serial.print("初期状態を設定したら,スイッチを押してください。再度設定したい場合は,モニターに再び数値を入れてください");
 
             if( sw_flag() == 1 ){
                 start = millis();
