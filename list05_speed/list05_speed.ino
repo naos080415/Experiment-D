@@ -1,9 +1,13 @@
-
 /* シリアルモニタに日本語を使っているため,メモリ使用量が非常に大きくなる */
 #include <VarSpeedServo.h>
 
 #define SW 5    /* タクトスイッチのポート番号 */
 #define LED 10
+/* 実験3回目の配列データ
+data_theta1[4] = {110,110,139,139};
+data_theta2[4] = {80,126,132,82};
+data_theta3[4] = {74,74,74,74};
+*/
 
 /* サーボモータの回転限度角 */
 #define Moter1_lim_min 0
@@ -18,6 +22,10 @@ VarSpeedServo mServo1;
 VarSpeedServo mServo2;
 VarSpeedServo mServo3;
 
+/* 
+Moter = (148,155,172)
+Moter = (148,155,150)
+*/
 unsigned long millis();
 /* 2回目計測時
 Moter = (135,62,179)1
@@ -37,20 +45,9 @@ int theta3[6] = {143,179,179,179,179,123};
 
 void Mother_anlge(int angle1,int angle2,int angle3){
     /* 回転限度角を超えないようにプログラムを追加する */
-    if( angle1 >= Moter1_lim_min && angle1 <= Moter1_lim_max )
         mServo1.write(angle1);
-    else
-        Serial.print("Mother1-limit");
-
-    if( angle2 >= Moter2_lim_min && angle2 <= Moter2_lim_max )
         mServo2.write(angle2);
-    else
-        Serial.print("Mother2-limit");
-
-    if( angle3 >= Moter3_lim_min && angle3 <= Moter3_lim_max )
         mServo3.write(angle3);
-    else
-        Serial.print("Mother3-limit");
 }
 
 void Mother_anlge_speed(int angle1,int speed1,int angle2,int speed2,int angle3,int speed3){
@@ -105,14 +102,14 @@ void setup()
 }
 
 void loop(){
-    Serial.println("プログラムスタート");
+    Serial.println("Program start");
 
     long ad0,ad1,ad2;
 
     /* ボリュームセンサからの角度調整用変数 */
     int ad_theta1,ad_theta2,ad_theta3;
 
-    int speed1 = 255,speed2 = 255,speed3 = 255;    /* サーボモータのスピード制御用変数 */
+    int speed1 = 10,speed2 = 10,speed3 = 10;    /* サーボモータのスピード制御用変数 */
 
     /* 事前に測定したデータを代入する配列(テスト用にわかりやすい値を代入しています。) */
     int data_theta1[13];
@@ -145,14 +142,13 @@ void loop(){
     serial_theta1 = 90;
     serial_theta2 = 90;
     serial_theta3 = 90;
-
     delay(2000);
 
     while(1){
         switch (mode)
         {
         case 0:
-            Serial.println("サーボモータを初期値に設定(90,90,90)");
+            Serial.println("Servo init(90,90,90)");
             /* LEDの点灯及び,サーボーモータの初期値代入 */
             digitalWrite(LED,OUTPUT);
             mode = 1;
@@ -160,9 +156,9 @@ void loop(){
         
         case 1:
             Mother_anlge(90,90,90);
-            delay(100);
-            Serial.println("モード設定");
-            Serial.println("(1-ボリュームで制御　　2-シリアルモニタで制御　　　3-配列からデータを読み出す　　4-センサ&モータ チェック)");
+            delay(1000);
+            Serial.println("Mode Setting");
+            Serial.println("(1-Valuse Control  2-Serial Control　　　3-index Control　　4-Mother&Sensor check)");
             serial_num = 0;
             mode = 2;
             break;
@@ -192,7 +188,8 @@ void loop(){
             ad_theta2 = ( ad1 * 180 / 1024);
             ad_theta3 = ( ad2 * 180 / 1024);
 
-            Mother_anlge(ad_theta1,ad_theta2,ad_theta3);
+            Mother_anlge_speed(ad_theta1,50,ad_theta2,50,ad_theta3,50);
+            // Mother_anlge(ad_theta1,ad_theta2,ad_theta3);
             val_print(ad_theta1,ad_theta2,ad_theta3,0);
 
             if( flag == 0 && digitalRead(SW) == LOW ){
@@ -213,12 +210,12 @@ void loop(){
             /* シリアルモニターに角度を送信すると,その角度まで移動するプログラム */
             Serial.println("シリアルモニタで制御");
             Serial.println("シリアルモニタに以下のように入力をすると,その角度まで移動するプログラム");
-            Serial.println("例1： 090,090,090;");
-            Serial.println("例1：すべてのモータを90度に設定する");
-            Serial.println("例2： 180,000,075s;");
-            Serial.println("例2：モータ1を180度,モータ2を0度,モータ3を75度に設定する.sをつけると,buffに保存する");
-            Serial.println("例2： 100,090,000v;");
-            Serial.println("例2：モータ1を100度,モータ2を90度,モータ3を0度に設定する.sをつけると,buffに保存し,buffを書き出す");
+            Serial.println("ex1： 090,090,090;");
+            Serial.println("ex1：すべてのモータを90度に設定する");
+            Serial.println("ex2： 180,000,075s;");
+            Serial.println("ex2：Mother1:180[deg],Mother1:0[deg],Mother3:75[deg].s option save buff");
+            Serial.println("ex2： 100,090,000v;");
+            Serial.println("ex2：モータ1を100度,モータ2を90度,モータ3を0度に設定する.sをつけると,buffに保存し,buffを書き出す");
 
             for(i=0;i<13;i++){
                 buff1[i] = 0;
@@ -268,11 +265,12 @@ void loop(){
 
             val_print(serial_theta1,serial_theta2,serial_theta3,0);
             mode = 25;
-
             break;
 
         case 25:                    
-            Mother_anlge(serial_theta1,serial_theta2,serial_theta3);
+
+            // Mother_anlge(serial_theta1,serial_theta2,serial_theta3);
+            Mother_anlge_speed(serial_theta1,50,serial_theta2,50,serial_theta3,50);
 
             if( serial_string[11] == 's' || serial_string[11] == 'v' ){
                 /* セーブモードになり,モータの角度をbuffに保存する. */
@@ -291,7 +289,7 @@ void loop(){
             break;
 
         case 30:
-            Serial.println("配列からデータを読み出す");
+            Serial.println("index read");
             mode = 31;
             break;
 
@@ -308,7 +306,7 @@ void loop(){
         case 32:
             if( Serial.available() ){
                 serial_string[i] = char(Serial.read());
-                if( serial_string[i] == ';' ){
+                if( serial_string[i] == ';' || serial_string[i] == ':' ){
                     serial_theta1 = 0;
                     serial_theta2 = 0;
                     serial_theta3 = 0;
@@ -326,14 +324,16 @@ void loop(){
                 serial_theta3 += (serial_string[i+8] - '0')*weight;
                 weight /= 10;
             }
-            Mother_anlge(serial_theta1,serial_theta2,serial_theta3);
+            Mother_anlge_speed(serial_theta1,100,serial_theta2,100,serial_theta3,100);
+
+            // Mother_anlge(serial_theta1,serial_theta2,serial_theta3);
             val_print(serial_theta1,serial_theta2,serial_theta3,0);
             Serial.println("初期状態を設定したら,スイッチを押してください。再度設定したい場合は,モニターに再び数値を入れてください");
             mode = 34;
             break;
         
         case 34:
-
+            Mother_anlge_speed(serial_theta1,10,serial_theta2,10,serial_theta3,10);
             if( sw_flag() == 1 ){
                 start = millis();
                 mode = 35;
@@ -344,31 +344,28 @@ void loop(){
 
         case 35:
             /* 第3関節サーボモーターを動かし,スイッチを押す動作を記述する */      
-            mServo3.write(30,speed3,true);   //スイッチを押す動作
-            mServo3.write(60,speed3,true);   //スイッチを離す動作(ここは,falseでもいいかも)
-
+            mServo2.write(data_theta2[0],speed3,true);   //スイッチを押す動作
             mode = 36;
             break;
 
         case 36:
             /* 配列からのデータの読み出しを行い,スイッチ間を移動する */
             /* VarSpeedServoを使うことでなめらか制御が実現できる */
-            for(i=0;i<data_size;i++){
-                // Mother_anlge_speed(data_theta1[i],speed1,data_theta2[i],speed2,data_theta3[i],speed3);
-
-                mServo1.write(data_theta1[i],speed1,true);            
-                /* 実験の都合上,コメントしている. */
+            for(i=1;i<data_size;i++){
+                Mother_anlge_speed(data_theta1[i],speed1,data_theta2[i],speed2,data_theta3[i],speed3);
+                // mServo1.write(data_theta1[i],speed1,true);            
                 // mServo2.write(data_theta2[i],speed2,true);
                 // mServo3.write(data_theta3[i],speed3,true);
             }
             mode = 37;
             break;
 
+
         case 37:
             /* 第3関節サーボモーターを動かし,スイッチを押す動作を記述する */      
-            mServo3.write(30,speed3,true);   //スイッチを押す動作
+            // mServo3.write(30,speed3,true);   //スイッチを押す動作
             end = millis();
-            mServo3.write(60,speed3,true);   //スイッチを離す動作
+            // mServo3.write(60,speed3,true);   //スイッチを離す動作
             mode = 38;
             break;
 
@@ -390,7 +387,7 @@ void loop(){
             break;
 
         case 41:
-            Serial.println("モータチェック");
+            Serial.println("Mother check");
             Mother_anlge(120,120,120);
             delay(3000);
             Mother_anlge(90,90,90);
@@ -401,7 +398,7 @@ void loop(){
             break;
 
         case 42:
-            Serial.println("ボリュームチェックプログラム");
+            Serial.println("Valume check");
             delay(3000);
             mode = 43;
             break;
@@ -420,7 +417,7 @@ void loop(){
             break;
         
         case 44:
-            Serial.println("LED　チェック");
+            Serial.println("LED　check");
             mode = 45;
             break;
         
@@ -437,7 +434,7 @@ void loop(){
 
         case 80:
             /* buff書き出し命令 */
-            Serial.println("buffの値をシリアルモニターに書き出す");
+            Serial.println("buff write");
             Serial.print("data_theta1[");
             Serial.print(buff_cnt);
             Serial.print("] = {");
@@ -479,7 +476,7 @@ void loop(){
 
         case 90:
             /* プログラム終了処理 */
-            Serial.println("プログラム終了");
+            Serial.println("exit");
             digitalWrite(LED,LOW);
             mode = 91;
             break;
