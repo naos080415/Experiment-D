@@ -4,12 +4,6 @@
 #define SW 5    /* タクトスイッチのポート番号 */
 #define LED 10
 
-/* 実験3回目の配列データ
-data_theta1[4] = {110,110,139,139};
-data_theta2[4] = {80,126,132,82};
-data_theta3[4] = {74,74,74,74};
-*/
-
 /* サーボモータの回転限度角 */
 #define Moter1_lim_min 0
 #define Moter1_lim_max 180
@@ -142,9 +136,13 @@ void loop(){
     wait_time3 = true;
     
     /* 事前に測定したデータを代入する配列(テスト用にわかりやすい値を代入しています。) */
-    int data_theta1[13];
-    int data_theta2[13];
-    int data_theta3[13];
+    // int data_theta1[13];
+    // int data_theta2[13];
+    // int data_theta3[13];
+    int data_theta1[13] = {110,110,139,139,0,0,0,0,0,0,0,0,0};
+    int data_theta2[13] = {80,126,132,82,0,0,0,0,0,0,0,0,0};
+    int data_theta3[13] = {74,74,74,74,0,0,0,0,0,0,0,0,0};
+
     /* data_sizeを指定するプログラム */
     int data_size = 0;
 
@@ -184,6 +182,10 @@ void loop(){
             Serial.println("Servo init(90,90,90)");
             /* LEDの点灯及び,サーボーモータの初期値代入 */
             digitalWrite(LED,OUTPUT);
+            /* buff_cnt のカウントダウン */
+            while( data_theta1[i] != 0 )
+                i++;
+            data_size = i;
             mode = 1;
             break;
         
@@ -191,6 +193,8 @@ void loop(){
             Mother_anlge(90,90,90);
             delay(1000);
             val_print(speed1,speed2,speed3,2);
+            Serial.print("data_size = ");
+            Serial.println(data_size);
             Serial.println("Mode Setting");
             Serial.println("(1-Valuse Control  2-Serial Control　　　3-index Control　　4-Mother&Sensor check　　5-Setting Mode)");
             serial_num = 0;
@@ -303,7 +307,7 @@ void loop(){
 
         case 25:                    
 
-            // Mother_anlge(serial_theta1,serial_theta2,serial_theta3);
+            // Mother_anlge(serial_theta1,serial_theta2,serial_theta3);        /* テスト用関数 */
             Mother_anlge_speed_all(serial_theta1,50,serial_theta2,50,serial_theta3,50);
 
             if( serial_string[11] == 's' || serial_string[11] == 'v' ){
@@ -582,36 +586,52 @@ void loop(){
         case 80:
             /* buff書き出し命令 */
             Serial.println("buff write");
-            Serial.print("data_theta1[");
-            Serial.print(buff_cnt);
-            Serial.print("] = {");
-            for(i=0;i<(buff_cnt-1);i++){
+            Serial.print("int data_theta1[13] = {");
+            for(i=0;i<(buff_cnt);i++){
                 Serial.print(buff1[i]);
                 Serial.print(",");
             }
-            Serial.print(buff1[buff_cnt-1]);
+            
+            for(;i<13;i++){
+                Serial.print(0);
+                if( i != 12 )
+                    Serial.print(",");
+            }
+
             Serial.println("};");
 
-            Serial.print("data_theta2[");
-            Serial.print(buff_cnt);
-            Serial.print("] = {");
-            for(i=0;i<(buff_cnt-1);i++){
+            Serial.print("int data_theta2[13] = {");
+            for(i=0;i<(buff_cnt);i++){
                 Serial.print(buff2[i]);
                 Serial.print(",");
             }
-            Serial.print(buff2[buff_cnt-1]);
+            for(;i<13;i++){
+                Serial.print(0);
+                if( i != 12 )
+                    Serial.print(",");
+            }
             Serial.println("};");
 
-            Serial.print("data_theta3[");
-            Serial.print(buff_cnt);
-            Serial.print("] = {");
-
-            for(i=0;i<(buff_cnt-1);i++){
+            Serial.print("int data_theta3[13] = {");
+            for(i=0;i<(buff_cnt);i++){
                 Serial.print(buff3[i]);
                 Serial.print(",");
             }
-            Serial.print(buff3[buff_cnt-1]);
+            for(;i<13;i++){
+                Serial.print(0);
+                if( i != 12 )
+                    Serial.print(",");
+            }
+
             Serial.println("};");
+
+            /* data_thetaの初期化 */
+            for(i=0;i<13;i++){
+                data_theta1[i] = 0;
+                data_theta2[i] = 0;
+                data_theta3[i] = 0;
+            }
+
             for(i=0;i<buff_cnt;i++){
                 data_theta1[i] = buff1[i];
                 data_theta2[i] = buff2[i];
@@ -636,5 +656,4 @@ void loop(){
             break;
         }
     }
-    
 }
