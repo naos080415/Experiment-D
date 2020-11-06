@@ -3,6 +3,7 @@
 
 #define SW 5    /* タクトスイッチのポート番号 */
 #define LED 10
+
 /* 実験3回目の配列データ
 data_theta1[4] = {110,110,139,139};
 data_theta2[4] = {80,126,132,82};
@@ -50,22 +51,44 @@ void Mother_anlge(int angle1,int angle2,int angle3){
         mServo3.write(angle3);
 }
 
-void Mother_anlge_speed(int angle1,int speed1,int angle2,int speed2,int angle3,int speed3){
+void Mother_anlge_speed_all(int angle1,int speed1,int angle2,int speed2,int angle3,int speed3){
     if( angle1 >= Moter1_lim_min && angle1 <= Moter1_lim_max )
         mServo1.write(angle1,speed1,true);
     else
-        Serial.print("Mother1-limit");
+        Serial.println("Mother1-limit");
 
     if( angle2 >= Moter2_lim_min && angle2 <= Moter2_lim_max )
         mServo2.write(angle2,speed2,true);
     else
-        Serial.print("Mother2-limit");
+        Serial.println("Mother2-limit");
 
     if( angle3 >= Moter3_lim_min && angle3 <= Moter3_lim_max )
         mServo3.write(angle3,speed3,true);
     else
-        Serial.print("Mother3-limit");
+        Serial.println("Mother3-limit");
 }
+
+void Mother_anlge_speed_one(int angle,int speed,bool flag){
+    if( angle >= Moter1_lim_min && angle <= Moter1_lim_max )
+        mServo1.write(angle,speed,flag);
+    else
+        Serial.println("Mother1-limit");
+}
+
+void Mother_anlge_speed_two(int angle,int speed,bool flag){
+    if( angle >= Moter2_lim_min && angle <= Moter2_lim_max )
+        mServo2.write(angle,speed,flag);
+    else
+        Serial.println("Mother2-limit");
+}
+
+void Mother_anlge_speed_three(int angle,int speed,bool flag){
+    if( angle >= Moter3_lim_min && angle <= Moter3_lim_max )
+        mServo3.write(angle,speed,flag);
+    else
+        Serial.println("Mother3-limit");
+}
+
 
 int sw_flag(){
     int flag = 0;
@@ -82,6 +105,8 @@ void val_print(int val1,int val2,int val3,int flag){
         Serial.print("Moter = (");
     else if( flag == 1 )
         Serial.print("Value = (");
+    else if( flag == 2 )
+        Serial.print("speed = (");
     Serial.print(val1);
     Serial.print(",");
     Serial.print(val2);
@@ -110,13 +135,21 @@ void loop(){
     int ad_theta1,ad_theta2,ad_theta3;
 
     int speed1 = 10,speed2 = 10,speed3 = 10;    /* サーボモータのスピード制御用変数 */
+    bool wait_time1,wait_time2,wait_time3;      /* サーボモータ関数の待ち時間用変数 */
 
+    wait_time1 = true;                          /* 初期値をtrueに設定 */
+    wait_time2 = true;
+    wait_time3 = true;
+    
     /* 事前に測定したデータを代入する配列(テスト用にわかりやすい値を代入しています。) */
     int data_theta1[13];
     int data_theta2[13];
     int data_theta3[13];
     /* data_sizeを指定するプログラム */
     int data_size = 0;
+
+    /* スピード制御用変数代入 */
+    char serial_speed[4];
 
     /* 分割数を設定する変数 */
     int div = 1;
@@ -157,8 +190,9 @@ void loop(){
         case 1:
             Mother_anlge(90,90,90);
             delay(1000);
+            val_print(speed1,speed2,speed3,2);
             Serial.println("Mode Setting");
-            Serial.println("(1-Valuse Control  2-Serial Control　　　3-index Control　　4-Mother&Sensor check)");
+            Serial.println("(1-Valuse Control  2-Serial Control　　　3-index Control　　4-Mother&Sensor check　　5-Setting Mode)");
             serial_num = 0;
             mode = 2;
             break;
@@ -167,7 +201,7 @@ void loop(){
             if( Serial.available() ){
                 serial_num = Serial.read() - '0';
             }
-            if( serial_num == 1 || serial_num == 2 || serial_num == 3 || serial_num == 4)
+            if( serial_num == 1 || serial_num == 2 || serial_num == 3 || serial_num == 4 || serial_num == 5 )
                 mode = serial_num * 10;
             break;
 
@@ -188,7 +222,7 @@ void loop(){
             ad_theta2 = ( ad1 * 180 / 1024);
             ad_theta3 = ( ad2 * 180 / 1024);
 
-            Mother_anlge_speed(ad_theta1,50,ad_theta2,50,ad_theta3,50);
+            Mother_anlge_speed_all(ad_theta1,50,ad_theta2,50,ad_theta3,50);
             // Mother_anlge(ad_theta1,ad_theta2,ad_theta3);
             val_print(ad_theta1,ad_theta2,ad_theta3,0);
 
@@ -270,7 +304,7 @@ void loop(){
         case 25:                    
 
             // Mother_anlge(serial_theta1,serial_theta2,serial_theta3);
-            Mother_anlge_speed(serial_theta1,50,serial_theta2,50,serial_theta3,50);
+            Mother_anlge_speed_all(serial_theta1,50,serial_theta2,50,serial_theta3,50);
 
             if( serial_string[11] == 's' || serial_string[11] == 'v' ){
                 /* セーブモードになり,モータの角度をbuffに保存する. */
@@ -324,8 +358,8 @@ void loop(){
                 serial_theta3 += (serial_string[i+8] - '0')*weight;
                 weight /= 10;
             }
-            Mother_anlge_speed(serial_theta1,100,serial_theta2,100,serial_theta3,100);
-
+            
+            Mother_anlge_speed_all(serial_theta1,10,serial_theta2,10,serial_theta3,10);
             // Mother_anlge(serial_theta1,serial_theta2,serial_theta3);
             val_print(serial_theta1,serial_theta2,serial_theta3,0);
             Serial.println("初期状態を設定したら,スイッチを押してください。再度設定したい場合は,モニターに再び数値を入れてください");
@@ -333,7 +367,7 @@ void loop(){
             break;
         
         case 34:
-            Mother_anlge_speed(serial_theta1,10,serial_theta2,10,serial_theta3,10);
+            Mother_anlge_speed_all(serial_theta1,10,serial_theta2,10,serial_theta3,10);
             if( sw_flag() == 1 ){
                 start = millis();
                 mode = 35;
@@ -343,7 +377,7 @@ void loop(){
             break;
 
         case 35:
-            /* 第3関節サーボモーターを動かし,スイッチを押す動作を記述する */      
+            /* 第3関節サーボモーターを動かし,スイッチを押す動作を記述する */
             mServo2.write(data_theta2[0],speed3,true);   //スイッチを押す動作
             mode = 36;
             break;
@@ -352,7 +386,17 @@ void loop(){
             /* 配列からのデータの読み出しを行い,スイッチ間を移動する */
             /* VarSpeedServoを使うことでなめらか制御が実現できる */
             for(i=1;i<data_size;i++){
-                Mother_anlge_speed(data_theta1[i],speed1,data_theta2[i],speed2,data_theta3[i],speed3);
+                /* 前回のサーボ値と変化があれば,処理をする. */
+                if( data_theta1[i-1] != data_theta1[i] )
+                    Mother_anlge_speed_one(data_theta1[i],speed1,wait_time1);
+    
+                if( data_theta2[i-1] != data_theta2[i] )
+                    Mother_anlge_speed_two(data_theta2[i],speed2,wait_time2);
+    
+                if( data_theta3[i-1] != data_theta3[i] )
+                    Mother_anlge_speed_three(data_theta3[i],speed3,wait_time3);
+
+                // Mother_anlge_speed_all(data_theta1[i],speed1,data_theta2[i],speed2,data_theta3[i],speed3);
                 // mServo1.write(data_theta1[i],speed1,true);            
                 // mServo2.write(data_theta2[i],speed2,true);
                 // mServo3.write(data_theta3[i],speed3,true);
@@ -431,6 +475,109 @@ void loop(){
             }
             mode = 1;
             break;
+
+        case 50:
+            /* スピード制御用変数の確認用プログラム */
+            Serial.println("Setting Mode");
+            Serial.println("Input Num");
+            mode = 51;
+            break;
+
+        case 51:
+            Serial.print("speed1 = ");
+            /* 変数初期化 */
+            for(i=0;i<4;i++)
+                serial_speed[i] = 0;
+            i = 0;
+            mode =52;
+            break;
+
+        case 52:
+            /* シリアルモニタからの入力待ち変数 */
+            if( Serial.available() ){
+                serial_speed[i] = char(Serial.read());
+                if( serial_speed[i] == ';' ){
+                    speed1 = 0;
+                    mode = 53;
+                }
+                i++;
+            }
+            break;
+
+        case 53:
+            weight = 100;
+            for(i=0;i<3;i++){
+                speed1 += (serial_speed[i] - '0')*weight;
+                weight /= 10;
+            }
+            Serial.println(speed1);
+            mode = 54;
+            break;
+
+
+        case 54:
+            Serial.print("speed2 = ");
+            /* 変数初期化 */
+            for(i=0;i<4;i++)
+                serial_speed[i] = 0;
+            i = 0;
+            mode =55;
+            break;
+
+        case 55:
+            /* シリアルモニタからの入力待ち変数 */
+
+            if( Serial.available() ){
+                serial_speed[i] = char(Serial.read());
+                if( serial_speed[i] == ';' ){
+                    speed2 = 0;
+                    mode = 56;
+                }
+                i++;
+            }
+            break;
+
+        case 56:
+            weight = 100;
+            for(i=0;i<3;i++){
+                speed2 += (serial_speed[i] - '0')*weight;
+                weight /= 10;
+            }
+            Serial.println(speed2);
+            mode = 57;
+            break;
+
+        case 57:
+            Serial.print("speed3 = ");
+            /* 変数初期化 */
+            for(i=0;i<4;i++)
+                serial_speed[i] = 0;
+            i = 0;
+            mode =58;
+            break;
+
+        case 58:
+            /* シリアルモニタからの入力待ち変数 */
+            if( Serial.available() ){
+                serial_speed[i] = char(Serial.read());
+                if( serial_speed[i] == ';' ){
+                    speed3 = 0;
+                    mode = 59;
+                }
+                i++;
+            }
+            break;
+
+        case 59:
+            weight = 100;
+            for(i=0;i<3;i++){
+                speed3 += (serial_speed[i] - '0')*weight;
+                weight /= 10;
+            }
+            Serial.println(speed3);
+            mode = 1;
+            break;
+
 
         case 80:
             /* buff書き出し命令 */
